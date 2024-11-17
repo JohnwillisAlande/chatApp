@@ -13,13 +13,13 @@ import AllUsers from "../chat/AllUsers";
 import SearchUsers from "../chat/SearchUsers";
 
 export default function ChatLayout() {
-  const [users, SetUsers] = useState([]);
+  const [users, setUsers] = useState([]);  // Ensure users is always an array
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [chatRooms, setChatRooms] = useState([]);
+  const [chatRooms, setChatRooms] = useState([]);  // Ensure chatRooms is always an array
   const [filteredRooms, setFilteredRooms] = useState([]);
 
   const [currentChat, setCurrentChat] = useState();
-  const [onlineUsersId, setonlineUsersId] = useState([]);
+  const [onlineUsersId, setOnlineUsersId] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isContact, setIsContact] = useState(false);
@@ -32,29 +32,34 @@ export default function ChatLayout() {
     const getSocket = async () => {
       const res = await initiateSocketConnection();
       socket.current = res;
-      socket.current.emit("addUser", currentUser.uid);
-      socket.current.on("getUsers", (users) => {
-        const userId = users.map((u) => u[0]);
-        setonlineUsersId(userId);
-      });
+      if (currentUser) {
+        socket.current.emit("addUser", currentUser.uid);
+        socket.current.on("getUsers", (users) => {
+          const userId = users.map((u) => u[0]);
+          setOnlineUsersId(userId);
+        });
+      }
     };
 
     getSocket();
-  }, [currentUser.uid]);
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await getChatRooms(currentUser.uid);
-      setChatRooms(res);
+      if (currentUser) {
+        const res = await getChatRooms(currentUser.uid);
+        setChatRooms(res || []);
+      }
     };
 
     fetchData();
-  }, [currentUser.uid]);
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchData = async () => {
       const res = await getAllUsers();
-      SetUsers(res);
+      console.log(res);  // Check if users are fetched correctly
+      setUsers(res || []);  // Fallback to an empty array if undefined
     };
 
     fetchData();
@@ -66,12 +71,10 @@ export default function ChatLayout() {
   }, [users, chatRooms]);
 
   useEffect(() => {
-    if (isContact) {
-      setFilteredUsers([]);
-    } else {
-      setFilteredRooms([]);
+    if (!isContact) {
+      setFilteredUsers(users);  // Ensure users are shown when isContact is false
     }
-  }, [isContact]);
+  }, [isContact, users]);
 
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
@@ -88,18 +91,18 @@ export default function ChatLayout() {
 
     const searchedUsersId = searchedUsers.map((u) => u.uid);
 
-    // If there are initial contacts
     if (chatRooms.length !== 0) {
       chatRooms.forEach((chatRoom) => {
-        // Check if searched user is a contact or not.
         const isUserContact = chatRoom.members.some(
           (e) => e !== currentUser.uid && searchedUsersId.includes(e)
         );
         setIsContact(isUserContact);
 
-        isUserContact
-          ? setFilteredRooms([chatRoom])
-          : setFilteredUsers(searchedUsers);
+        if (isUserContact) {
+          setFilteredRooms([chatRoom]);
+        } else {
+          setFilteredUsers(searchedUsers);
+        }
       });
     } else {
       setFilteredUsers(searchedUsers);

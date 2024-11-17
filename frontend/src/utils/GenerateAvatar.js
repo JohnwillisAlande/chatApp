@@ -1,26 +1,38 @@
 const generateDiceBearAvataaars = (seed) =>
-  `https://avatars.dicebear.com/api/avataaars/${seed}.svg`;
+  `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}`;
 
 const generateDiceBearBottts = (seed) =>
-  `https://avatars.dicebear.com/api/bottts/${seed}.svg`;
+  `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
 
 const generateDiceBearGridy = (seed) =>
-  `https://avatars.dicebear.com/api/gridy/${seed}.svg`;
+  `https://api.dicebear.com/9.x/pixel-art/svg?seed=${seed}`;
 
 export const generateAvatar = () => {
   const data = [];
 
+  // Define the names list with only 6 names
+  const namesList = ["John", "Jane", "Mike", "Hadassah", "Mark", "Esther"];
+
+  // Generate 2 Avataaars
   for (let i = 0; i < 2; i++) {
-    const res = generateDiceBearAvataaars(Math.random());
-    data.push(res);
+    const seed = namesList[i]; // Use namesList for seeds
+    const avataaars = generateDiceBearAvataaars(seed);
+    data.push(avataaars);
   }
-  for (let i = 0; i < 2; i++) {
-    const res = generateDiceBearBottts(Math.random());
-    data.push(res);
+
+  // Generate 2 Bottts
+  for (let i = 2; i < 4; i++) {
+    const seed = namesList[i]; // Use namesList for seeds
+    const bottts = generateDiceBearBottts(seed);
+    data.push(bottts);
   }
-  for (let i = 0; i < 2; i++) {
-    const res = generateDiceBearGridy(Math.random());
-    data.push(res);
+
+  // Generate 2 Gridy
+  for (let i = 4; i < 6; i++) {
+    const seed = namesList[i]; // Use namesList for seeds
+    const gridy = generateDiceBearGridy(seed);
+    data.push(gridy);
   }
+
   return data;
 };
